@@ -21,6 +21,7 @@ const internalAdminNav = [
 ];
 
 const externalNav = [
+  { to: '/cop/upload', label: 'Upload' },
   { to: '/cop', label: 'CoP Home' },
   { to: '/cop/library', label: 'Learning Library' },
   { to: '/cop/themes', label: 'Thematic Pages' },

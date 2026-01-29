@@ -4,7 +4,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-001', createdAt: '2025-01-15T10:00:00Z',
     prompt: 'Summarise key findings on forest governance in Ghana for 2024–2025.',
-    scope: { countries: ['Ghana'], themes: ['Forest Governance'], reportingPeriods: [] },
+    scope: { countries: ['Ghana'], themes: ['Forest Governance'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Ghana has made notable progress in forest governance during 2024-2025. The VPA implementation achieved a significant milestone with the timber legality assurance system processing over 2,300 permits in Q4 2024. Community forest management has demonstrated tangible results, and the FLEGT licensing readiness stands at 78%.',
     bullets: [
       'Timber legality assurance system processed 2,340 permits in Q4 2024, a 15% increase from Q3.',
@@ -23,7 +23,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-002', createdAt: '2025-01-15T10:05:00Z',
     prompt: 'What evidence do we have on markets and climate in Indonesia?',
-    scope: { countries: ['Indonesia'], themes: ['Markets', 'Climate'], reportingPeriods: [] },
+    scope: { countries: ['Indonesia'], themes: ['Markets', 'Climate'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Indonesia shows strong interconnections between market development and climate action in the forest sector. REDD+ payments and timber market growth are both advancing, while climate finance mechanisms are creating new economic opportunities for forest communities.',
     bullets: [
       'Plywood exports to Japan increased 12% in Q3 2024; furniture exports to EU grew with sustainability certification.',
@@ -42,7 +42,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-003', createdAt: '2025-01-15T10:10:00Z',
     prompt: 'List the major risks mentioned across the selected documents.',
-    scope: { countries: [], themes: [], reportingPeriods: [] },
+    scope: { countries: [], themes: [], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Multiple risk factors have been identified across programme countries, spanning governance, environmental, and market dimensions. The most critical risks relate to enforcement gaps, climate threats, and market transition challenges.',
     bullets: [
       'Cross-border timber trade monitoring remains a challenge in Ghana with enforcement gaps.',
@@ -62,7 +62,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-004', createdAt: '2025-01-15T10:15:00Z',
     prompt: 'What progress has been made on REDD+ across programme countries?',
-    scope: { countries: [], themes: ['Climate'], reportingPeriods: [] },
+    scope: { countries: [], themes: ['Climate'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'REDD+ implementation has advanced significantly across all three programme countries in 2024, with Indonesia leading in verified emission reductions and Brazil achieving major restoration milestones.',
     bullets: [
       'Indonesia achieved 25 million tCO2e verified emission reductions through REDD+ in 2024.',
@@ -81,7 +81,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-005', createdAt: '2025-01-15T10:20:00Z',
     prompt: 'How are communities benefiting from forest programmes?',
-    scope: { countries: [], themes: [], reportingPeriods: [] },
+    scope: { countries: [], themes: [], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Community benefits from forest programmes are evident across all three countries, spanning improved livelihoods, governance participation, and direct financial returns from sustainable forest management and carbon payments.',
     bullets: [
       'Ghana communities report improved livelihoods through sustainable harvesting under CFM agreements.',
@@ -100,7 +100,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-006', createdAt: '2025-01-15T10:25:00Z',
     prompt: 'What are the trends in certified timber markets?',
-    scope: { countries: [], themes: ['Markets'], reportingPeriods: [] },
+    scope: { countries: [], themes: ['Markets'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Certified timber markets are experiencing strong growth driven by regulatory requirements, consumer demand, and sustainability commitments. Prices are at multi-year highs and supply chains are adapting to new due diligence requirements.',
     bullets: [
       'Global certified timber demand grew 18% year-over-year in Q4 2024.',
@@ -118,7 +118,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-007', createdAt: '2025-01-15T10:30:00Z',
     prompt: 'What is the status of Brazil\'s deforestation monitoring?',
-    scope: { countries: ['Brazil'], themes: ['Forest Governance'], reportingPeriods: [] },
+    scope: { countries: ['Brazil'], themes: ['Forest Governance'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Brazil\'s deforestation monitoring system has shown significant improvements in 2024, with expanded coverage and faster response times, though the Cerrado biome remains a concern area.',
     bullets: [
       'DETER alerts showed 18% decrease in deforestation in Q4 2024 compared to Q4 2023.',
@@ -136,7 +136,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-008', createdAt: '2025-01-15T10:35:00Z',
     prompt: 'Compare forest governance approaches across Ghana, Indonesia and Brazil.',
-    scope: { countries: ['Ghana', 'Indonesia', 'Brazil'], themes: ['Forest Governance'], reportingPeriods: [] },
+    scope: { countries: ['Ghana', 'Indonesia', 'Brazil'], themes: ['Forest Governance'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'All three countries are pursuing distinct but complementary approaches to forest governance, with common themes around legality verification, community engagement, and technology adoption.',
     bullets: [
       'Ghana focuses on VPA implementation and timber legality assurance with 78% FLEGT readiness.',
@@ -155,7 +155,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-009', createdAt: '2025-01-15T10:40:00Z',
     prompt: 'What are the key policy recommendations from recent reports?',
-    scope: { countries: [], themes: [], reportingPeriods: [] },
+    scope: { countries: [], themes: [], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Recent reports converge on several key policy recommendations spanning governance reform, market development, community empowerment, and climate action.',
     bullets: [
       'Strengthen domestic timber processing capacity and diversify export markets (Ghana).',
@@ -174,7 +174,7 @@ export const mockAIAnswers: AIAnswer[] = [
   {
     id: 'ai-010', createdAt: '2025-01-15T10:45:00Z',
     prompt: 'Summarise climate adaptation activities across all countries.',
-    scope: { countries: [], themes: ['Climate'], reportingPeriods: [] },
+    scope: { countries: [], themes: ['Climate'], reportingPeriods: [], projects: [], documentIds: [] },
     answerText: 'Climate adaptation activities are advancing across all programme countries, with focus areas including fire management, restoration, species resilience, and community-based approaches.',
     bullets: [
       'Ghana expanded fire management programmes to 12 additional districts; carbon monitoring shows 5% increase in sequestration.',

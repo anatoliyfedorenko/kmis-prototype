@@ -173,16 +173,25 @@ export function isAIConfigured(): boolean {
 }
 
 // AI - live call via OpenRouter
-export async function getAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[] }): Promise<AIAnswer> {
+export async function getAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[]; projects: string[]; documentIds: string[] }): Promise<AIAnswer> {
   const settings = state.aiSettings;
 
+  // If specific documents are selected, use those directly
+  const pinnedDocs = scope.documentIds.length > 0
+    ? state.documents.filter(d => scope.documentIds.includes(d.id))
+    : [];
+
   // Gather relevant document context
-  const relevantDocs = state.documents.filter(d => {
+  const filteredDocs = state.documents.filter(d => {
+    if (scope.documentIds.length > 0 && scope.documentIds.includes(d.id)) return false; // already in pinnedDocs
     if (scope.countries.length > 0 && !d.metadata.countries.some(c => scope.countries.includes(c))) return false;
     if (scope.themes.length > 0 && !d.metadata.themes.some(t => scope.themes.includes(t))) return false;
     if (scope.reportingPeriods.length > 0 && !d.metadata.reportingPeriods.some(p => scope.reportingPeriods.includes(p))) return false;
+    if (scope.projects.length > 0 && d.metadata.project && !scope.projects.includes(d.metadata.project)) return false;
     return d.status !== 'draft';
-  }).slice(0, 8);
+  }).slice(0, 8 - pinnedDocs.length);
+
+  const relevantDocs = [...pinnedDocs, ...filteredDocs];
 
   const docContext = relevantDocs.map((d, i) =>
     `[Document ${i + 1}: "${d.title}" | ${d.metadata.countries.join(', ')} | ${d.metadata.themes.join(', ')} | ${d.metadata.documentType}]\n${d.extractedText}`
@@ -264,7 +273,7 @@ Respond in this exact JSON format (no markdown fencing):
 }
 
 // AI - fallback with prebuilt answers
-export function getMockAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[] }): AIAnswer {
+export function getMockAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[]; projects: string[]; documentIds: string[] }): AIAnswer {
   const lower = prompt.toLowerCase();
   // Try to match a prebuilt answer
   for (const a of mockAIAnswers) {
@@ -282,11 +291,17 @@ export function getMockAIAnswer(prompt: string, scope: { countries: string[]; th
     if (scopeMatch && promptMatch) return a;
   }
   // Fallback: return a generic answer based on scope
-  const relevantDocs = state.documents.filter(d => {
+  const pinnedDocs = scope.documentIds.length > 0
+    ? state.documents.filter(d => scope.documentIds.includes(d.id))
+    : [];
+  const filteredDocs = state.documents.filter(d => {
+    if (scope.documentIds.length > 0 && scope.documentIds.includes(d.id)) return false;
     if (scope.countries.length > 0 && !d.metadata.countries.some(c => scope.countries.includes(c))) return false;
     if (scope.themes.length > 0 && !d.metadata.themes.some(t => scope.themes.includes(t))) return false;
+    if (scope.projects.length > 0 && d.metadata.project && !scope.projects.includes(d.metadata.project)) return false;
     return true;
-  }).slice(0, 4);
+  }).slice(0, 4 - pinnedDocs.length);
+  const relevantDocs = [...pinnedDocs, ...filteredDocs];
 
   return {
     id: 'ai-fallback-' + Date.now(),

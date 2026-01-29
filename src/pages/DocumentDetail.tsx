@@ -186,6 +186,40 @@ export default function DocumentDetail() {
         </div>
       </div>
 
+      {/* Ask AI about this document */}
+      {role !== 'external' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-3">Ask AI About This Document</h2>
+          <p className="text-sm text-gray-600 mb-3">Start an AI conversation scoped to this document.</p>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={`/ai?doc=${refreshedDoc.id}&prompt=${encodeURIComponent('Summarise the key findings of this document.')}`}
+              className="px-3 py-2 bg-blue-50 text-blue-700 rounded-full text-sm hover:bg-blue-100 border border-blue-200 no-underline"
+            >
+              Summarise key findings
+            </Link>
+            <Link
+              to={`/ai?doc=${refreshedDoc.id}&prompt=${encodeURIComponent('What are the main risks identified in this document?')}`}
+              className="px-3 py-2 bg-blue-50 text-blue-700 rounded-full text-sm hover:bg-blue-100 border border-blue-200 no-underline"
+            >
+              Identify main risks
+            </Link>
+            <Link
+              to={`/ai?doc=${refreshedDoc.id}&prompt=${encodeURIComponent('What recommendations does this document make?')}`}
+              className="px-3 py-2 bg-blue-50 text-blue-700 rounded-full text-sm hover:bg-blue-100 border border-blue-200 no-underline"
+            >
+              List recommendations
+            </Link>
+            <Link
+              to={`/ai?doc=${refreshedDoc.id}`}
+              className="px-3 py-2 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 no-underline"
+            >
+              Ask a custom question
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Cited in AI answers */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold mb-3">Cited in AI Answers</h2>

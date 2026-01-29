@@ -19,8 +19,10 @@ export default function Upload() {
   const [submitted, setSubmitted] = useState(false);
   const [, setTick] = useState(0);
 
-  if (role !== 'admin') {
-    return <div className="text-center py-12"><p className="text-gray-500 mb-4">This page is only available to Internal Admin users.</p><Link to="/" className="text-blue-600">Go to home</Link></div>;
+  const isExternal = role === 'external';
+
+  if (role !== 'admin' && role !== 'external') {
+    return <div className="text-center py-12"><p className="text-gray-500 mb-4">This page is only available to Admin and External users.</p><Link to="/" className="text-blue-600">Go to home</Link></div>;
   }
 
   const draftDocs = documents.filter(d => d.status === 'draft');
@@ -177,27 +179,29 @@ export default function Upload() {
         )}
       </div>
 
-      {/* Validation Queue */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">Validation Queue</h2>
-        {draftDocs.length === 0 ? (
-          <p className="text-gray-500 text-sm">No draft documents pending validation.</p>
-        ) : (
-          <div className="space-y-3">
-            {draftDocs.map(d => (
-              <div key={d.id} className="flex items-center justify-between border border-gray-100 rounded px-4 py-3 hover:bg-gray-50">
-                <div>
-                  <Link to={`/documents/${d.id}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm no-underline hover:underline">{d.title}</Link>
-                  <div className="text-xs text-gray-500 mt-0.5">{d.metadata.countries.join(', ')} — {d.metadata.themes.join(', ')}</div>
+      {/* Validation Queue — admin only */}
+      {!isExternal && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4">Validation Queue</h2>
+          {draftDocs.length === 0 ? (
+            <p className="text-gray-500 text-sm">No draft documents pending validation.</p>
+          ) : (
+            <div className="space-y-3">
+              {draftDocs.map(d => (
+                <div key={d.id} className="flex items-center justify-between border border-gray-100 rounded px-4 py-3 hover:bg-gray-50">
+                  <div>
+                    <Link to={`/documents/${d.id}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm no-underline hover:underline">{d.title}</Link>
+                    <div className="text-xs text-gray-500 mt-0.5">{d.metadata.countries.join(', ')} — {d.metadata.themes.join(', ')}</div>
+                  </div>
+                  <button onClick={() => handleValidate(d.id)} className="px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 min-h-[44px] cursor-pointer text-sm">
+                    Validate
+                  </button>
                 </div>
-                <button onClick={() => handleValidate(d.id)} className="px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 min-h-[44px] cursor-pointer text-sm">
-                  Validate
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

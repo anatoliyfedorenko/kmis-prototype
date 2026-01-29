@@ -42,6 +42,8 @@ export interface AIAnswer {
     countries: string[];
     themes: string[];
     reportingPeriods: string[];
+    projects: string[];
+    documentIds: string[];
   };
   answerText: string;
   bullets: string[];

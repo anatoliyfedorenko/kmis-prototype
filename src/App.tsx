@@ -34,6 +34,7 @@ export default function App() {
           <Route path="/cop/library" element={<CoPLibrary />} />
           <Route path="/cop/themes" element={<CoPThemes />} />
           <Route path="/cop/events" element={<CoPEvents />} />
+          <Route path="/cop/upload" element={<Upload />} />
           <Route path="/cop/about" element={<CoPAbout />} />
           <Route path="/help" element={<Help />} />
           <Route path="/admin" element={<AdminSettings />} />
