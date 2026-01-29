@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useDocuments, useRole, useTaxonomy } from '../hooks/useStore';
 import { addDocuments, updateDocument } from '../store';
 import type { KMISDocument, DocumentStatus } from '../types';
-import StatusBadge from '../components/StatusBadge';
 import { Link } from 'react-router-dom';
 
 interface FileEntry {

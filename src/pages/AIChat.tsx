@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useRole, useTaxonomy, useDocuments } from '../hooks/useStore';
+import { useRole, useTaxonomy } from '../hooks/useStore';
 import { getMockAIAnswer, getDocument } from '../store';
 import MultiSelect from '../components/MultiSelect';
 import type { AIAnswer } from '../types';

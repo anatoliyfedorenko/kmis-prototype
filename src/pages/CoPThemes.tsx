@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useDocuments } from '../hooks/useStore';
 
 const themes = [
