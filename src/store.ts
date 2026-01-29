@@ -13,20 +13,22 @@ export interface UserAccount {
   email: string;
   role: Role;
   initials: string;
+  status: 'Active' | 'Inactive';
 }
 
-export const userAccounts: UserAccount[] = [
-  { id: 'user-1', name: 'Sarah Johnson', email: 'sarah.johnson@fcdo.gov.uk', role: 'admin', initials: 'SJ' },
-  { id: 'user-2', name: 'James Osei', email: 'james.osei@fcdo.gov.uk', role: 'admin', initials: 'JO' },
-  { id: 'user-3', name: 'Maria Silva', email: 'maria.silva@fcdo.gov.uk', role: 'viewer', initials: 'MS' },
-  { id: 'user-4', name: 'Ahmad Wijaya', email: 'ahmad.wijaya@fcdo.gov.uk', role: 'viewer', initials: 'AW' },
-  { id: 'user-5', name: 'Claire Dupont', email: 'claire.dupont@fgmc-cop.org', role: 'external', initials: 'CD' },
-  { id: 'user-6', name: 'David Mensah', email: 'david.mensah@fgmc-cop.org', role: 'external', initials: 'DM' },
+const defaultUsers: UserAccount[] = [
+  { id: 'user-1', name: 'Sarah Johnson', email: 'sarah.johnson@fcdo.gov.uk', role: 'admin', initials: 'SJ', status: 'Active' },
+  { id: 'user-2', name: 'James Osei', email: 'james.osei@fcdo.gov.uk', role: 'admin', initials: 'JO', status: 'Active' },
+  { id: 'user-3', name: 'Maria Silva', email: 'maria.silva@fcdo.gov.uk', role: 'viewer', initials: 'MS', status: 'Active' },
+  { id: 'user-4', name: 'Ahmad Wijaya', email: 'ahmad.wijaya@fcdo.gov.uk', role: 'viewer', initials: 'AW', status: 'Active' },
+  { id: 'user-5', name: 'Claire Dupont', email: 'claire.dupont@fgmc-cop.org', role: 'external', initials: 'CD', status: 'Active' },
+  { id: 'user-6', name: 'David Mensah', email: 'david.mensah@fgmc-cop.org', role: 'external', initials: 'DM', status: 'Active' },
 ];
 
 interface StoreState {
   role: Role;
   currentUserId: string | null;
+  users: UserAccount[];
   documents: KMISDocument[];
   evidenceUpdates: EvidenceUpdate[];
   taxonomy: Taxonomy;
@@ -37,7 +39,12 @@ function loadState(): StoreState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // Migrate old state that may lack the users array
+      if (!parsed.users) {
+        parsed.users = defaultUsers;
+      }
+      return parsed;
     }
   } catch { /* ignore */ }
   return getDefaultState();
@@ -47,6 +54,7 @@ function getDefaultState(): StoreState {
   return {
     role: 'viewer',
     currentUserId: null,
+    users: defaultUsers,
     documents: seedDocuments,
     evidenceUpdates: seedEvidenceUpdates,
     taxonomy: defaultTaxonomy,
@@ -80,10 +88,11 @@ export function setRole(r: Role) { state.role = r; notify(); }
 export function getCurrentUserId(): string | null { return state.currentUserId; }
 export function getCurrentUser(): UserAccount | null {
   if (!state.currentUserId) return null;
-  return userAccounts.find(u => u.id === state.currentUserId) || null;
+  return state.users.find(u => u.id === state.currentUserId) || null;
 }
+export function getUsers(): UserAccount[] { return state.users; }
 export function login(userId: string) {
-  const user = userAccounts.find(u => u.id === userId);
+  const user = state.users.find(u => u.id === userId);
   if (user) {
     state.currentUserId = userId;
     state.role = user.role;
@@ -93,6 +102,20 @@ export function login(userId: string) {
 export function logout() {
   state.currentUserId = null;
   state.role = 'viewer';
+  notify();
+}
+
+// User management
+export function addUser(user: UserAccount) {
+  state.users = [...state.users, user];
+  notify();
+}
+export function updateUser(id: string, updates: Partial<UserAccount>) {
+  state.users = state.users.map(u => u.id === id ? { ...u, ...updates } : u);
+  notify();
+}
+export function deleteUser(id: string) {
+  state.users = state.users.filter(u => u.id !== id);
   notify();
 }
 
@@ -173,6 +196,21 @@ export function getMockAIAnswer(prompt: string, scope: { countries: string[]; th
 
 // Taxonomy
 export function getTaxonomy(): Taxonomy { return state.taxonomy; }
+export function addTaxonomyItem(key: keyof Taxonomy, value: string) {
+  const list = state.taxonomy[key];
+  if (!list.includes(value)) {
+    state.taxonomy = { ...state.taxonomy, [key]: [...list, value] };
+    notify();
+  }
+}
+export function removeTaxonomyItem(key: keyof Taxonomy, value: string) {
+  state.taxonomy = { ...state.taxonomy, [key]: state.taxonomy[key].filter(v => v !== value) };
+  notify();
+}
+export function renameTaxonomyItem(key: keyof Taxonomy, oldValue: string, newValue: string) {
+  state.taxonomy = { ...state.taxonomy, [key]: state.taxonomy[key].map(v => v === oldValue ? newValue : v) };
+  notify();
+}
 
 // Events
 export function getEvents(): CoPEvent[] { return state.events; }

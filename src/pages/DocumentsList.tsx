@@ -51,7 +51,7 @@ export default function DocumentsList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
         <div className="flex items-center gap-2">
           <label htmlFor="saved-search" className="text-sm text-gray-500">Saved Searches:</label>
           <select id="saved-search" onChange={e => { if (e.target.value) applySavedSearch(Number(e.target.value)); }} className="border border-gray-300 rounded px-3 py-2 text-sm bg-white min-h-[44px]" defaultValue="">

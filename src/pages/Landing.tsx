@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, userAccounts } from '../store';
+import { login, getUsers } from '../store';
 import type { Role } from '../types';
 
 const roleDescriptions: Record<Role, string> = {
@@ -15,20 +15,26 @@ export default function Landing() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const users = getUsers();
+
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedId) {
       setError('Please select a user account.');
       return;
     }
-    const user = userAccounts.find(u => u.id === selectedId);
+    const user = users.find(u => u.id === selectedId);
     if (!user) return;
+    if (user.status === 'Inactive') {
+      setError('This account has been deactivated. Contact an administrator.');
+      return;
+    }
     login(user.id);
     setError('');
     navigate(user.role === 'external' ? '/cop' : '/documents');
   }
 
-  const selectedUser = userAccounts.find(u => u.id === selectedId);
+  const selectedUser = users.find(u => u.id === selectedId);
 
   return (
     <div className="max-w-md mx-auto py-16">
@@ -57,7 +63,7 @@ export default function Landing() {
               className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm min-h-[44px] bg-white"
             >
               <option value="">Select account...</option>
-              {userAccounts.map(u => (
+              {users.filter(u => u.status === 'Active').map(u => (
                 <option key={u.id} value={u.id}>{u.name} — {u.email}</option>
               ))}
             </select>
