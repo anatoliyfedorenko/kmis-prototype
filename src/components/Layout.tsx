@@ -64,7 +64,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <header className="bg-[#1e293b] text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
           <Link to={user ? (role === 'external' ? '/cop' : '/documents') : '/'} className="text-lg font-bold tracking-tight hover:text-blue-200 no-underline text-white">
-            FGMC2 KMIS
+            KMIS
           </Link>
           <nav className="hidden lg:flex items-center gap-1" role="navigation" aria-label="Main navigation">
             {nav.map(item => (
@@ -120,7 +120,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="bg-gray-100 border-t border-gray-200 py-4 text-center text-sm text-gray-500">
-        FGMC2 Knowledge Management Information System · FCDO
+        Knowledge Management Information System
       </footer>
     </div>
   );

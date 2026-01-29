@@ -1,6 +1,6 @@
-# FGMC2 KMIS Frontend Prototype
+# KMIS — Knowledge Management Information System
 
-A clickable frontend prototype demonstrating the Knowledge Management Information System for FGMC2 stakeholder validation.
+A frontend application for managing documents, evidence, and knowledge across programme countries and themes. Features role-based access, AI-powered Q&A, and a Community of Practice portal.
 
 ## Running Locally
 
@@ -12,19 +12,13 @@ npm run dev
 
 Open http://localhost:5173 in your browser.
 
-## Changing Role
+## User Accounts
 
-Use the **role selector dropdown** in the top-right corner of the header. Three roles are available:
+Sign in using one of the pre-configured accounts on the login screen. Three roles are available:
 
-- **Internal Viewer** — Search documents, ask AI questions, view evidence pages
-- **Internal Admin** — All viewer features plus upload, validate, publish, and admin settings
-- **External CoP Member** — Browse published resources on the Community of Practice portal
-
-You can also select a role from the landing page cards.
-
-## Resetting Demo Data
-
-Click the **"Reset Demo Data"** link in the footer to restore all seed data to its original state. This clears localStorage and reloads the page.
+- **Internal Admin** — Full access: upload, validate, publish, AI Q&A, evidence pages, admin settings
+- **Internal Staff** — Search documents, ask AI questions, view evidence pages
+- **External CoP Member** — Browse published resources, upload documents, access the Community of Practice portal
 
 ## Tech Stack
 
@@ -32,3 +26,11 @@ Click the **"Reset Demo Data"** link in the footer to restore all seed data to i
 - Tailwind CSS v4
 - React Router v7
 - localStorage for persistence (no backend required)
+
+## Features
+
+- **Document Management** — Upload, tag with metadata, validate, and publish documents
+- **AI Q&A** — ChatGPT-style conversational interface with scope filtering, chat history, and save-as-note
+- **Evidence Pages** — Country and theme-based evidence timelines with risk snapshots
+- **Community of Practice** — External portal with learning library, thematic pages, and events
+- **Admin Settings** — User management, taxonomy configuration, AI model configuration via OpenRouter

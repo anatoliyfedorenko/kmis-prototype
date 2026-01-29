@@ -4,8 +4,8 @@ import { login, getUsers } from '../store';
 import type { Role } from '../types';
 
 const roleDescriptions: Record<Role, string> = {
-  admin: 'PMSST Admin',
-  viewer: 'FCDO / PMSST Staff',
+  admin: 'System Admin',
+  viewer: 'Internal Staff',
   external: 'CoP Member',
 };
 
@@ -42,7 +42,7 @@ export default function Landing() {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-xl mb-4">
           <span className="text-2xl font-bold text-white">KM</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">FGMC2 KMIS</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">KMIS</h1>
         <p className="text-gray-500 text-sm">Knowledge Management Information System</p>
       </div>
 
@@ -105,7 +105,7 @@ export default function Landing() {
       </div>
 
       <p className="text-center text-xs text-gray-400 mt-6">
-        FGMC2 Knowledge Management Information System · FCDO
+        Knowledge Management Information System
       </p>
     </div>
   );

@@ -354,7 +354,7 @@ export default function AdminSettings() {
                   type="email"
                   value={newUser.email}
                   onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                  placeholder="e.g. jane.smith@fcdo.gov.uk"
+                  placeholder="e.g. jane.smith@example.org"
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm min-h-[44px]"
                 />
               </div>
