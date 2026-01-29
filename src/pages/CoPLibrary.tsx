@@ -24,7 +24,7 @@ export default function CoPLibrary() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Learning Library</h1>
-      <p className="text-gray-600 text-sm mb-6">Browse published learning resources from the FGMC2 programme.</p>
+      <p className="text-gray-600 text-sm mb-6">Browse published learning resources from the programme.</p>
 
       <div className="mb-4">
         <input type="search" placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)}

@@ -12,8 +12,8 @@ export default function CoPHome() {
     <div>
       <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg p-8 mb-8">
         <h1 className="text-3xl font-bold mb-3">Community of Practice Portal</h1>
-        <p className="text-blue-100 text-lg mb-4">FGMC2 Knowledge Sharing Platform</p>
-        <p className="text-blue-200 text-sm max-w-2xl">Welcome to the FGMC2 Community of Practice. Access published learning outputs, thematic resources, and upcoming events from the Forest Governance, Markets and Climate programme.</p>
+        <p className="text-blue-100 text-lg mb-4">Knowledge Sharing Platform</p>
+        <p className="text-blue-200 text-sm max-w-2xl">Welcome to the Community of Practice. Access published learning outputs, thematic resources, and upcoming events from the programme knowledge base.</p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

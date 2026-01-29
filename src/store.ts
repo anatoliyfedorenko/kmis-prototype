@@ -17,12 +17,12 @@ export interface UserAccount {
 }
 
 const defaultUsers: UserAccount[] = [
-  { id: 'user-1', name: 'Sarah Johnson', email: 'sarah.johnson@fcdo.gov.uk', role: 'admin', initials: 'SJ', status: 'Active' },
-  { id: 'user-2', name: 'James Osei', email: 'james.osei@fcdo.gov.uk', role: 'admin', initials: 'JO', status: 'Active' },
-  { id: 'user-3', name: 'Maria Silva', email: 'maria.silva@fcdo.gov.uk', role: 'viewer', initials: 'MS', status: 'Active' },
-  { id: 'user-4', name: 'Ahmad Wijaya', email: 'ahmad.wijaya@fcdo.gov.uk', role: 'viewer', initials: 'AW', status: 'Active' },
-  { id: 'user-5', name: 'Claire Dupont', email: 'claire.dupont@fgmc-cop.org', role: 'external', initials: 'CD', status: 'Active' },
-  { id: 'user-6', name: 'David Mensah', email: 'david.mensah@fgmc-cop.org', role: 'external', initials: 'DM', status: 'Active' },
+  { id: 'user-1', name: 'Sarah Johnson', email: 'sarah.johnson@example.org', role: 'admin', initials: 'SJ', status: 'Active' },
+  { id: 'user-2', name: 'James Osei', email: 'james.osei@example.org', role: 'admin', initials: 'JO', status: 'Active' },
+  { id: 'user-3', name: 'Maria Silva', email: 'maria.silva@example.org', role: 'viewer', initials: 'MS', status: 'Active' },
+  { id: 'user-4', name: 'Ahmad Wijaya', email: 'ahmad.wijaya@example.org', role: 'viewer', initials: 'AW', status: 'Active' },
+  { id: 'user-5', name: 'Claire Dupont', email: 'claire.dupont@community.example.org', role: 'external', initials: 'CD', status: 'Active' },
+  { id: 'user-6', name: 'David Mensah', email: 'david.mensah@community.example.org', role: 'external', initials: 'DM', status: 'Active' },
 ];
 
 export interface AISettings {
@@ -34,7 +34,7 @@ export interface AISettings {
 const defaultAISettings: AISettings = {
   openRouterKey: '',
   model: 'anthropic/claude-sonnet-4',
-  systemPrompt: 'You are a knowledge management assistant for the FGMC2 programme. Answer questions based on the provided document excerpts. Always cite your sources by document title. Be concise and factual. Structure your response with a short summary paragraph, then bullet points for key findings.',
+  systemPrompt: 'You are a knowledge management assistant. Answer questions based on the provided document excerpts. Always cite your sources by document title. Be concise and factual. Structure your response with a short summary paragraph, then bullet points for key findings.',
 };
 
 interface StoreState {
