@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useRole, useTaxonomy, useUsers } from '../hooks/useStore';
-import { addTaxonomyItem, removeTaxonomyItem, renameTaxonomyItem, addUser, updateUser, deleteUser } from '../store';
+import { useRole, useTaxonomy, useUsers, useAISettings } from '../hooks/useStore';
+import { addTaxonomyItem, removeTaxonomyItem, renameTaxonomyItem, addUser, updateUser, deleteUser, updateAISettings } from '../store';
 import { Link } from 'react-router-dom';
 import type { Role } from '../types';
 import type { UserAccount } from '../store';
@@ -29,6 +29,12 @@ export default function AdminSettings() {
   const role = useRole();
   const taxonomy = useTaxonomy();
   const users = useUsers();
+  const aiSettings = useAISettings();
+
+  // AI settings state
+  const [showKey, setShowKey] = useState(false);
+  const [testingKey, setTestingKey] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Taxonomy state
   const [editingTaxKey, setEditingTaxKey] = useState<keyof Taxonomy | null>(null);
@@ -109,6 +115,125 @@ export default function AdminSettings() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Settings</h1>
+
+      {/* AI Configuration */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">AI Configuration</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Configure the AI engine for the Q&A feature.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+              aiSettings.openRouterKey ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+            }`}>
+              <span className={`inline-block w-2 h-2 rounded-full ${aiSettings.openRouterKey ? 'bg-green-500' : 'bg-yellow-500'}`} />
+              {aiSettings.openRouterKey ? 'Configured' : 'Not configured'}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">OpenRouter API Key</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={aiSettings.openRouterKey}
+                  onChange={e => { updateAISettings({ openRouterKey: e.target.value }); setTestResult(null); }}
+                  placeholder="sk-or-v1-..."
+                  className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm min-h-[44px] pr-20 font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 bg-transparent border-none cursor-pointer"
+                >
+                  {showKey ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <button
+                onClick={async () => {
+                  if (!aiSettings.openRouterKey) { setTestResult({ ok: false, message: 'Enter an API key first.' }); return; }
+                  setTestingKey(true);
+                  setTestResult(null);
+                  try {
+                    const res = await fetch('https://openrouter.ai/api/v1/models', {
+                      headers: { 'Authorization': `Bearer ${aiSettings.openRouterKey}` },
+                    });
+                    if (res.ok) {
+                      setTestResult({ ok: true, message: 'Connection successful. API key is valid.' });
+                    } else {
+                      setTestResult({ ok: false, message: `Invalid key (HTTP ${res.status}).` });
+                    }
+                  } catch (err) {
+                    setTestResult({ ok: false, message: 'Connection failed. Check your network.' });
+                  }
+                  setTestingKey(false);
+                }}
+                disabled={testingKey || !aiSettings.openRouterKey}
+                className="px-4 py-2.5 border border-gray-300 rounded font-medium hover:bg-gray-50 min-h-[44px] cursor-pointer bg-white text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {testingKey ? 'Testing...' : 'Test Connection'}
+              </button>
+            </div>
+            {testResult && (
+              <p className={`text-xs mt-1.5 ${testResult.ok ? 'text-green-600' : 'text-red-600'}`}>
+                {testResult.message}
+              </p>
+            )}
+            <p className="text-xs text-gray-400 mt-1.5">
+              Get your key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">openrouter.ai/keys</a>
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+            <select
+              value={aiSettings.model}
+              onChange={e => updateAISettings({ model: e.target.value })}
+              className="w-full border border-gray-300 rounded px-3 py-2.5 text-sm min-h-[44px] bg-white"
+            >
+              <optgroup label="Anthropic">
+                <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
+                <option value="anthropic/claude-opus-4">Claude Opus 4</option>
+                <option value="anthropic/claude-haiku-3.5">Claude 3.5 Haiku</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option value="openai/gpt-4o">GPT-4o</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                <option value="openai/o3-mini">o3-mini</option>
+              </optgroup>
+              <optgroup label="Google">
+                <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
+                <option value="google/gemini-2.5-pro-preview">Gemini 2.5 Pro</option>
+              </optgroup>
+              <optgroup label="Meta">
+                <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
+                <option value="meta-llama/llama-4-scout">Llama 4 Scout</option>
+              </optgroup>
+              <optgroup label="DeepSeek">
+                <option value="deepseek/deepseek-chat-v3-0324">DeepSeek V3</option>
+                <option value="deepseek/deepseek-r1">DeepSeek R1</option>
+              </optgroup>
+            </select>
+            <p className="text-xs text-gray-400 mt-1">Routed through OpenRouter. Costs depend on the selected model.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">System Prompt</label>
+            <textarea
+              value={aiSettings.systemPrompt}
+              onChange={e => updateAISettings({ systemPrompt: e.target.value })}
+              rows={4}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono"
+              placeholder="Instructions for the AI model..."
+            />
+            <p className="text-xs text-gray-400 mt-1">Defines how the AI responds to questions. Customise to fit your programme's context.</p>
+          </div>
+        </div>
+      </div>
 
       {/* Taxonomy Management */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">

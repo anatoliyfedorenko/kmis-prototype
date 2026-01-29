@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useRole, useTaxonomy } from '../hooks/useStore';
-import { getMockAIAnswer, getDocument } from '../store';
+import { useRole, useTaxonomy, useAISettings } from '../hooks/useStore';
+import { getMockAIAnswer, getAIAnswer, getDocument, isAIConfigured } from '../store';
 import MultiSelect from '../components/MultiSelect';
 import type { AIAnswer } from '../types';
 
@@ -17,6 +17,7 @@ const suggestedPrompts = [
 export default function AIChat() {
   const role = useRole();
   const taxonomy = useTaxonomy();
+  const aiSettings = useAISettings();
   const [prompt, setPrompt] = useState('');
   const [countries, setCountries] = useState<string[]>([]);
   const [themes, setThemes] = useState<string[]>([]);
@@ -24,29 +25,45 @@ export default function AIChat() {
   const [answer, setAnswer] = useState<AIAnswer | null>(null);
   const [loading, setLoading] = useState(false);
   const [showRefs, setShowRefs] = useState(true);
+  const [error, setError] = useState('');
+
+  const aiLive = isAIConfigured();
 
   if (role === 'external') {
     return <div className="text-center py-12"><p className="text-gray-500 mb-4">AI Q&A is only available to internal users.</p><Link to="/cop" className="text-blue-600">Go to CoP Home</Link></div>;
   }
 
-  function handleAsk(q?: string) {
+  async function handleAsk(q?: string) {
     const question = q || prompt;
     if (!question.trim()) return;
     setLoading(true);
     setPrompt(question);
-    // Simulate slight delay
-    setTimeout(() => {
-      const result = getMockAIAnswer(question, { countries, themes, reportingPeriods: periods });
+    setError('');
+
+    const scope = { countries, themes, reportingPeriods: periods };
+
+    if (aiLive) {
+      try {
+        const result = await getAIAnswer(question, scope);
+        setAnswer(result);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to get AI response.');
+        setAnswer(null);
+      }
+    } else {
+      // Fallback to prebuilt answers
+      await new Promise(r => setTimeout(r, 800));
+      const result = getMockAIAnswer(question, scope);
       setAnswer(result);
-      setLoading(false);
-    }, 800);
+    }
+    setLoading(false);
   }
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Scope Panel */}
       <div className="lg:w-64 shrink-0">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h2 className="font-semibold text-gray-900 mb-3">Scope Selection</h2>
           <p className="text-xs text-gray-500 mb-3">Narrow the AI search to specific documents.</p>
           <div className="space-y-3">
@@ -54,6 +71,17 @@ export default function AIChat() {
             <MultiSelect label="Theme" options={taxonomy.themes} selected={themes} onChange={setThemes} />
             <MultiSelect label="Period" options={taxonomy.reportingPeriods} selected={periods} onChange={setPeriods} />
           </div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`inline-block w-2 h-2 rounded-full ${aiLive ? 'bg-green-500' : 'bg-yellow-500'}`} />
+            <span className="text-xs font-medium text-gray-700">{aiLive ? 'Live AI' : 'Offline Mode'}</span>
+          </div>
+          {aiLive ? (
+            <p className="text-xs text-gray-500">Using <span className="font-medium">{aiSettings.model.split('/').pop()}</span> via OpenRouter.</p>
+          ) : (
+            <p className="text-xs text-gray-500">Using prebuilt responses. {role === 'admin' ? <Link to="/admin" className="text-blue-600 hover:underline no-underline">Configure AI</Link> : 'Contact an admin to enable live AI.'}</p>
+          )}
         </div>
       </div>
 
@@ -84,7 +112,7 @@ export default function AIChat() {
         </div>
 
         {/* Suggested Prompts */}
-        {!answer && (
+        {!answer && !error && (
           <div className="mb-6">
             <p className="text-sm text-gray-500 mb-2">Try a suggested question:</p>
             <div className="flex flex-wrap gap-2">
@@ -104,7 +132,20 @@ export default function AIChat() {
         {/* Loading */}
         {loading && (
           <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <div className="animate-pulse text-gray-400">Analysing documents and generating response...</div>
+            <div className="animate-pulse text-gray-400">
+              {aiLive ? `Querying ${aiSettings.model.split('/').pop()}...` : 'Analysing documents and generating response...'}
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <div className="font-medium text-red-800 text-sm mb-1">AI Error</div>
+            <p className="text-sm text-red-700">{error}</p>
+            {role === 'admin' && (
+              <Link to="/admin" className="text-sm text-red-600 hover:text-red-800 underline mt-2 inline-block">Check AI settings</Link>
+            )}
           </div>
         )}
 
@@ -121,50 +162,58 @@ export default function AIChat() {
               <p className="text-gray-700 leading-relaxed">{answer.answerText}</p>
             </div>
 
-            <div className="mb-4">
-              <div className="text-xs text-gray-400 mb-1">Key Points</div>
-              <ul className="space-y-2">
-                {answer.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-blue-500 mt-1 shrink-0">•</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {answer.bullets.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs text-gray-400 mb-1">Key Points</div>
+                <ul className="space-y-2">
+                  {answer.bullets.map((b, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <span className="text-blue-500 mt-1 shrink-0">•</span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            <div className="border-t border-gray-200 pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs text-gray-400">Sources ({answer.sources.length})</div>
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <input type="checkbox" checked={showRefs} onChange={e => setShowRefs(e.target.checked)} className="h-4 w-4" />
-                  Show reference snippets
-                </label>
-              </div>
-              <div className="space-y-3">
-                {answer.sources.map((s, i) => {
-                  const doc = getDocument(s.documentId);
-                  return (
-                    <div key={i} className="border border-gray-100 rounded p-3 bg-gray-50">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Link to={`/documents/${s.documentId}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm no-underline hover:underline">
-                          {doc?.title || s.documentId}
-                        </Link>
-                        <span className="text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded">{s.referenceLabel}</span>
+            {answer.sources.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-gray-400">Sources ({answer.sources.length})</div>
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" checked={showRefs} onChange={e => setShowRefs(e.target.checked)} className="h-4 w-4" />
+                    Show reference snippets
+                  </label>
+                </div>
+                <div className="space-y-3">
+                  {answer.sources.map((s, i) => {
+                    const doc = getDocument(s.documentId);
+                    return (
+                      <div key={i} className="border border-gray-100 rounded p-3 bg-gray-50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Link to={`/documents/${s.documentId}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm no-underline hover:underline">
+                            {doc?.title || s.documentId}
+                          </Link>
+                          <span className="text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded">{s.referenceLabel}</span>
+                        </div>
+                        {showRefs && (
+                          <p className="text-xs text-gray-600 italic mt-1 bg-yellow-50 px-2 py-1 rounded border-l-2 border-yellow-300">
+                            "{s.snippet}"
+                          </p>
+                        )}
                       </div>
-                      {showRefs && (
-                        <p className="text-xs text-gray-600 italic mt-1 bg-yellow-50 px-2 py-1 rounded border-l-2 border-yellow-300">
-                          "{s.snippet}"
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-xs text-gray-400">Answers are ephemeral and not saved by default.</p>
+              <p className="text-xs text-gray-400">
+                {aiLive
+                  ? `Powered by ${aiSettings.model.split('/').pop()} via OpenRouter`
+                  : 'Answers are generated from the document collection'}
+              </p>
               <button className="text-sm text-blue-600 hover:text-blue-800 bg-transparent border border-blue-200 px-3 py-1.5 rounded cursor-pointer hover:bg-blue-50">
                 Save as Note
               </button>

@@ -25,10 +25,23 @@ const defaultUsers: UserAccount[] = [
   { id: 'user-6', name: 'David Mensah', email: 'david.mensah@fgmc-cop.org', role: 'external', initials: 'DM', status: 'Active' },
 ];
 
+export interface AISettings {
+  openRouterKey: string;
+  model: string;
+  systemPrompt: string;
+}
+
+const defaultAISettings: AISettings = {
+  openRouterKey: '',
+  model: 'anthropic/claude-sonnet-4',
+  systemPrompt: 'You are a knowledge management assistant for the FGMC2 programme. Answer questions based on the provided document excerpts. Always cite your sources by document title. Be concise and factual. Structure your response with a short summary paragraph, then bullet points for key findings.',
+};
+
 interface StoreState {
   role: Role;
   currentUserId: string | null;
   users: UserAccount[];
+  aiSettings: AISettings;
   documents: KMISDocument[];
   evidenceUpdates: EvidenceUpdate[];
   taxonomy: Taxonomy;
@@ -40,10 +53,9 @@ function loadState(): StoreState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      // Migrate old state that may lack the users array
-      if (!parsed.users) {
-        parsed.users = defaultUsers;
-      }
+      // Migrate old state that may lack newer fields
+      if (!parsed.users) parsed.users = defaultUsers;
+      if (!parsed.aiSettings) parsed.aiSettings = defaultAISettings;
       return parsed;
     }
   } catch { /* ignore */ }
@@ -55,6 +67,7 @@ function getDefaultState(): StoreState {
     role: 'viewer',
     currentUserId: null,
     users: defaultUsers,
+    aiSettings: defaultAISettings,
     documents: seedDocuments,
     evidenceUpdates: seedEvidenceUpdates,
     taxonomy: defaultTaxonomy,
@@ -149,7 +162,108 @@ export function deleteEvidenceUpdate(id: string) {
   notify();
 }
 
-// AI
+// AI Settings
+export function getAISettings(): AISettings { return state.aiSettings; }
+export function updateAISettings(updates: Partial<AISettings>) {
+  state.aiSettings = { ...state.aiSettings, ...updates };
+  notify();
+}
+export function isAIConfigured(): boolean {
+  return state.aiSettings.openRouterKey.length > 0;
+}
+
+// AI - live call via OpenRouter
+export async function getAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[] }): Promise<AIAnswer> {
+  const settings = state.aiSettings;
+
+  // Gather relevant document context
+  const relevantDocs = state.documents.filter(d => {
+    if (scope.countries.length > 0 && !d.metadata.countries.some(c => scope.countries.includes(c))) return false;
+    if (scope.themes.length > 0 && !d.metadata.themes.some(t => scope.themes.includes(t))) return false;
+    if (scope.reportingPeriods.length > 0 && !d.metadata.reportingPeriods.some(p => scope.reportingPeriods.includes(p))) return false;
+    return d.status !== 'draft';
+  }).slice(0, 8);
+
+  const docContext = relevantDocs.map((d, i) =>
+    `[Document ${i + 1}: "${d.title}" | ${d.metadata.countries.join(', ')} | ${d.metadata.themes.join(', ')} | ${d.metadata.documentType}]\n${d.extractedText}`
+  ).join('\n\n');
+
+  const userMessage = `Based on the following documents, answer this question: "${prompt}"
+
+${docContext}
+
+Respond in this exact JSON format (no markdown fencing):
+{
+  "summary": "A short summary paragraph",
+  "bullets": ["bullet point 1", "bullet point 2", "..."],
+  "sources": [
+    {"documentIndex": 0, "snippet": "relevant quote from the document", "referenceLabel": "e.g. Section 2, p. 8"},
+    ...
+  ]
+}`;
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.openRouterKey}`,
+    },
+    body: JSON.stringify({
+      model: settings.model,
+      messages: [
+        { role: 'system', content: settings.systemPrompt },
+        { role: 'user', content: userMessage },
+      ],
+      temperature: 0.3,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenRouter API error (${response.status}): ${err}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
+
+  // Parse the JSON response
+  let parsed: { summary: string; bullets: string[]; sources: { documentIndex: number; snippet: string; referenceLabel: string }[] };
+  try {
+    const jsonStr = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    // If parsing fails, use the raw text
+    return {
+      id: 'ai-live-' + Date.now(),
+      createdAt: new Date().toISOString(),
+      prompt,
+      scope,
+      answerText: content,
+      bullets: [],
+      sources: relevantDocs.slice(0, 3).map(d => ({
+        documentId: d.id,
+        snippet: d.extractedText.substring(0, 120) + '...',
+        referenceLabel: 'Document',
+      })),
+    };
+  }
+
+  return {
+    id: 'ai-live-' + Date.now(),
+    createdAt: new Date().toISOString(),
+    prompt,
+    scope,
+    answerText: parsed.summary,
+    bullets: parsed.bullets,
+    sources: parsed.sources.map(s => ({
+      documentId: relevantDocs[s.documentIndex]?.id || relevantDocs[0]?.id || '',
+      snippet: s.snippet,
+      referenceLabel: s.referenceLabel,
+    })).filter(s => s.documentId),
+  };
+}
+
+// AI - fallback with prebuilt answers
 export function getMockAIAnswer(prompt: string, scope: { countries: string[]; themes: string[]; reportingPeriods: string[] }): AIAnswer {
   const lower = prompt.toLowerCase();
   // Try to match a prebuilt answer
