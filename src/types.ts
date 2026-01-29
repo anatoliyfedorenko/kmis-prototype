@@ -63,6 +63,22 @@ export interface Taxonomy {
   contributors: string[];
 }
 
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'error';
+  text: string;
+  answer?: AIAnswer;
+  timestamp: string;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CoPEvent {
   id: string;
   title: string;

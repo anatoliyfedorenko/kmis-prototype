@@ -1,4 +1,4 @@
-import type { Role, KMISDocument, EvidenceUpdate, AIAnswer, Taxonomy, CoPEvent } from './types';
+import type { Role, KMISDocument, EvidenceUpdate, AIAnswer, Taxonomy, CoPEvent, ChatSession, ChatMessage } from './types';
 import { seedDocuments } from './data/documents';
 import { seedEvidenceUpdates } from './data/evidence';
 import { mockAIAnswers } from './data/aiAnswers';
@@ -46,6 +46,7 @@ interface StoreState {
   evidenceUpdates: EvidenceUpdate[];
   taxonomy: Taxonomy;
   events: CoPEvent[];
+  chatSessions: ChatSession[];
 }
 
 function loadState(): StoreState {
@@ -56,6 +57,7 @@ function loadState(): StoreState {
       // Migrate old state that may lack newer fields
       if (!parsed.users) parsed.users = defaultUsers;
       if (!parsed.aiSettings) parsed.aiSettings = defaultAISettings;
+      if (!parsed.chatSessions) parsed.chatSessions = [];
       return parsed;
     }
   } catch { /* ignore */ }
@@ -72,6 +74,7 @@ function getDefaultState(): StoreState {
     evidenceUpdates: seedEvidenceUpdates,
     taxonomy: defaultTaxonomy,
     events: seedEvents,
+    chatSessions: [],
   };
 }
 
@@ -321,6 +324,34 @@ export function getMockAIAnswer(prompt: string, scope: { countries: string[]; th
       referenceLabel: 'Section 1, p. 5'
     })),
   };
+}
+
+// Chat Sessions
+export function getChatSessions(): ChatSession[] { return state.chatSessions; }
+export function getChatSession(id: string): ChatSession | undefined { return state.chatSessions.find(s => s.id === id); }
+export function createChatSession(title: string): ChatSession {
+  const session: ChatSession = {
+    id: 'chat-' + Date.now(),
+    title,
+    messages: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  state.chatSessions = [session, ...state.chatSessions];
+  notify();
+  return session;
+}
+export function updateChatSession(id: string, updates: Partial<ChatSession>) {
+  state.chatSessions = state.chatSessions.map(s => s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s);
+  notify();
+}
+export function addMessageToChatSession(sessionId: string, message: ChatMessage) {
+  state.chatSessions = state.chatSessions.map(s => s.id === sessionId ? { ...s, messages: [...s.messages, message], updatedAt: new Date().toISOString() } : s);
+  notify();
+}
+export function deleteChatSession(id: string) {
+  state.chatSessions = state.chatSessions.filter(s => s.id !== id);
+  notify();
 }
 
 // Taxonomy

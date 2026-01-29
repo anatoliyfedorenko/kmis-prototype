@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { subscribe, getRole, getDocuments, getEvidenceUpdates, getTaxonomy, getEvents, getCurrentUser, getUsers, getAISettings } from '../store';
+import { subscribe, getRole, getDocuments, getEvidenceUpdates, getTaxonomy, getEvents, getCurrentUser, getUsers, getAISettings, getChatSessions } from '../store';
 
 export function useRole() {
   return useSyncExternalStore(subscribe, getRole);
@@ -31,4 +31,8 @@ export function useUsers() {
 
 export function useAISettings() {
   return useSyncExternalStore(subscribe, getAISettings);
+}
+
+export function useChatSessions() {
+  return useSyncExternalStore(subscribe, getChatSessions);
 }
