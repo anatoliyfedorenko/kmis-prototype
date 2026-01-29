@@ -17,6 +17,7 @@ export default function Upload() {
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [meta, setMeta] = useState({ countries: [] as string[], themes: [] as string[], reportingPeriods: [] as string[], documentType: '', project: '', contributor: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submittedDocIds, setSubmittedDocIds] = useState<string[]>([]);
   const [, setTick] = useState(0);
 
   const isExternal = role === 'external';
@@ -62,6 +63,7 @@ export default function Upload() {
       extractedText: 'Extracted text content from ' + f.name + '. This document contains key findings and analysis relevant to the programme.',
     }));
     addDocuments(newDocs);
+    setSubmittedDocIds(prev => [...prev, ...newDocs.map(d => d.id)]);
     setSubmitted(true);
     setFiles([]);
     setStep(1);
@@ -74,7 +76,7 @@ export default function Upload() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Upload & Validate</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{isExternal ? 'Upload Documents' : 'Upload & Validate'}</h1>
 
       {/* Upload Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
@@ -82,7 +84,9 @@ export default function Upload() {
 
         {submitted && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
-            Documents uploaded successfully as Draft. Use the validation queue below to validate them.
+            {isExternal
+              ? 'Documents submitted successfully. They will be reviewed and validated by an administrator.'
+              : 'Documents uploaded successfully as Draft. Use the validation queue below to validate them.'}
           </div>
         )}
 
@@ -178,6 +182,47 @@ export default function Upload() {
           </div>
         )}
       </div>
+
+      {/* Your Submissions — external users */}
+      {isExternal && submittedDocIds.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Your Submissions</h2>
+          <div className="space-y-3">
+            {submittedDocIds.map(docId => {
+              const d = documents.find(doc => doc.id === docId);
+              if (!d) return null;
+              return (
+                <div key={d.id} className="flex items-center gap-4 border border-gray-100 rounded-lg px-4 py-3 bg-gray-50">
+                  <div className="shrink-0 w-10 h-12 bg-white border border-gray-200 rounded flex items-center justify-center text-lg">
+                    {d.filename.endsWith('.pdf') ? '📄' : d.filename.endsWith('.xlsx') || d.filename.endsWith('.csv') ? '📊' : '📁'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-gray-900 truncate">{d.title}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {d.filename} · {d.sizeMb} MB · {d.metadata.countries.join(', ')} · {d.metadata.themes.join(', ')}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                      d.status === 'draft'
+                        ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                        : d.status === 'validated'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-green-50 text-green-700 border border-green-200'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        d.status === 'draft' ? 'bg-yellow-500' : d.status === 'validated' ? 'bg-blue-500' : 'bg-green-500'
+                      }`} />
+                      {d.status === 'draft' ? 'Pending Review' : d.status === 'validated' ? 'Validated' : 'Published'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-gray-400 mt-3">Submitted documents are reviewed by an administrator before they become available in the system.</p>
+        </div>
+      )}
 
       {/* Validation Queue — admin only */}
       {!isExternal && (
